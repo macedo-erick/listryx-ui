@@ -32,11 +32,12 @@
       >
         @for (item of items(); track $index) {
           <li cdkDrag class="flex items-center gap-2">
-            <i
+            <button
+              type="button"
               cdkDragHandle
-              class="pi pi-bars shrink-0 cursor-grab text-[var(--p-text-muted-color)]"
+              class="pi pi-bars shrink-0 cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
               [attr.aria-label]="t('lists.reorder')"
-            ></i>
+            ></button>
             <input
               pInputText
               class="min-w-0 flex-1"
