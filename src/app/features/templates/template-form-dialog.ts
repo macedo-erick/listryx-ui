@@ -1,4 +1,10 @@
-import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -19,7 +25,16 @@ interface EditableItem {
 
 @Component({
   selector: 'listryx-template-form-dialog',
-  imports: [FormsModule, CdkDropList, CdkDrag, Dialog, Button, InputText, InputNumber],
+  imports: [
+    FormsModule,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    Dialog,
+    Button,
+    InputText,
+    InputNumber,
+  ],
   templateUrl: './template-form-dialog.html',
 })
 export class TemplateFormDialog {

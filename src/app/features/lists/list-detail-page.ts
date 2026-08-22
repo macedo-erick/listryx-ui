@@ -1,4 +1,10 @@
-import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,6 +30,7 @@ import { SaveAsTemplateDialog } from './save-as-template-dialog';
     FormsModule,
     CdkDropList,
     CdkDrag,
+    CdkDragHandle,
     Button,
     Checkbox,
     InputText,
