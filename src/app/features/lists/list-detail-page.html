@@ -1,7 +1,7 @@
 @if (isLoading() && !list()) {
   <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
 } @else if (list(); as list) {
-  <div class="mx-auto flex h-full max-w-2xl flex-col">
+  <div class="mx-auto flex max-w-2xl flex-col pb-24">
     <div class="mb-4 flex items-start gap-2">
       <p-button
         [text]="true"
@@ -201,7 +201,7 @@
   </div>
 
   <div
-    class="fixed inset-x-0 bottom-0 border-t border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-3 sm:bottom-0"
+    class="fixed inset-x-0 bottom-0 border-t border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-3 lg:left-64"
   >
     <div class="mx-auto flex max-w-2xl items-center gap-2">
       <input

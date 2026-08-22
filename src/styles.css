@@ -36,53 +36,22 @@ body {
   outline-offset: 2px;
 }
 
-/*
- * Mobile overlay guards.
- *
- * These rules are intentionally unlayered so they win over the `primeng` layer.
- *
- * The shell never scrolls the document (html/body are `overflow: hidden` above), so
- * there is never a document scrollbar to compensate for. PrimeNG still applies
- * `padding-right: var(--p-scrollbar-width)` to <body> while a modal is open, and it
- * derives that value from `window.innerWidth - documentElement.offsetWidth`. If any
- * overlay is overflowing horizontally, mobile Chrome has zoomed out to fit it and
- * `innerWidth` is far larger than the layout width, so the "scrollbar" comes out at
- * ~140px and the whole UI is squeezed sideways for as long as the dialog is open.
- */
 body.p-overflow-hidden {
   padding-right: 0;
 }
 
-/*
- * `.p-dialog` ships with no max-width, so a dialog that is not given an explicit width
- * (p-confirmdialog) sizes to its content and can run past the viewport edge.
- */
 .p-dialog {
   max-width: calc(100vw - 2rem);
 }
 
-/* Same guard for popup panels, which size themselves from their content. */
 .p-menu-overlay,
 .p-select-overlay,
 .p-popover {
   max-width: calc(100vw - 1.5rem);
 }
 
-/*
- * iOS Safari zooms into any text field it focuses whose font size is under 16px, and it
- * never zooms back out afterwards. Aura sets `typography.fontSize` to 0.875rem and every
- * form field inherits it, so on a phone each tap on an input scaled the whole app up.
- *
- * Raising fields to 16px on coarse pointers removes the trigger. The other common fix,
- * `maximum-scale=1` on the viewport meta, works too but takes pinch-to-zoom away from
- * everyone (WCAG 1.4.4), so it is deliberately not used here.
- *
- * Unlayered, like the guards above: this has to win over the `primeng` layer and over any
- * `text-*` utility a template puts on a field.
- */
 @media (pointer: coarse) {
   :root {
-    /* Every PrimeNG field resolves its font size from these two tokens. */
     --p-form-field-font-size: 16px;
     --p-form-field-sm-font-size: 16px;
   }
@@ -95,19 +64,7 @@ body.p-overflow-hidden {
   }
 }
 
-/*
- * Drag and drop.
- *
- * The CDK ships no styling of its own, so without these rules the preview is an unstyled
- * clone with no elevation, the vacated slot is an invisible hole and the rows around it
- * snap to their new positions with no transition.
- *
- * Unlayered for the same reason as the rules above: the dragged row carries the Tailwind
- * utilities from its template, and those would otherwise win over the drag state.
- */
 .cdk-drag-handle {
-  /* `touch-action: none` keeps a drag that starts on the handle from scrolling the page
-     instead; the padding gives the icon a finger-sized target. */
   touch-action: none;
   padding: 0.25rem;
   cursor: grab;
@@ -118,10 +75,9 @@ body.p-overflow-hidden {
   cursor: grabbing;
 }
 
-/* The clone that follows the pointer: lifted off the page, never transparent. */
 .cdk-drag-preview {
   background: var(--p-content-background);
-  border-radius: 0.5rem; /* matches the `rounded-lg` on the list rows */
+  border-radius: 0.5rem;
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.12),
     0 12px 28px -8px rgb(0 0 0 / 0.35);
@@ -129,10 +85,6 @@ body.p-overflow-hidden {
   cursor: grabbing;
 }
 
-/*
- * Only opacity and box-shadow animate here. The CDK drives the preview's `transform` from
- * pointer movement, so animating transform would fight it.
- */
 @keyframes drag-lift {
   from {
     opacity: 0.75;
@@ -140,7 +92,6 @@ body.p-overflow-hidden {
   }
 }
 
-/* The gap left behind reads as the slot the row will drop into, not a ghost of the row. */
 .cdk-drag-placeholder {
   border: 1px dashed var(--p-primary-color);
   background: color-mix(in srgb, var(--p-primary-color), transparent 92%);
@@ -150,13 +101,11 @@ body.p-overflow-hidden {
   visibility: hidden;
 }
 
-/* Rows sliding aside during the drag, and the preview settling back on release. */
 .cdk-drag-animating,
 .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
   transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* A drag should not leave the row's text selected behind it. */
 .cdk-drop-list-dragging {
   user-select: none;
 }
