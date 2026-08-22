@@ -27,6 +27,7 @@
       <ul
         class="m-0 flex list-none flex-col gap-2 p-0"
         cdkDropList
+        cdkDropListLockAxis="y"
         (cdkDropListDropped)="drop($event)"
       >
         @for (item of items(); track $index) {
