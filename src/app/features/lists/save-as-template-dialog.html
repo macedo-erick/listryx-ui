@@ -1,0 +1,55 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: '28rem', maxWidth: '92vw' }"
+  [header]="t('lists.saveAsTemplate')"
+>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label for="templateName" class="text-sm text-[var(--p-text-muted-color)]">
+        {{ t('common.name') }}
+      </label>
+      <input
+        pInputText
+        id="templateName"
+        class="w-full"
+        autocomplete="off"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+        (keyup.enter)="save()"
+      />
+    </div>
+
+    @if (templates.templates().length > 0) {
+      <div class="flex flex-col gap-1">
+        <label for="replaceTemplate" class="text-sm text-[var(--p-text-muted-color)]">
+          {{ t('lists.replaceTemplate') }}
+        </label>
+        <p-select
+          [fluid]="true"
+          inputId="replaceTemplate"
+          [options]="templateOptions()"
+          optionLabel="name"
+          optionValue="id"
+          [showClear]="true"
+          [placeholder]="t('lists.createNewTemplate')"
+          [ngModel]="templateId()"
+          (ngModelChange)="pickTemplate($event)"
+        />
+      </div>
+    }
+  </div>
+
+  <ng-template #footer>
+    <p-button [text]="true" [label]="t('common.cancel')" (onClick)="visible.set(false)" />
+    <p-button
+      [label]="t('common.save')"
+      [disabled]="!canSave()"
+      [loading]="saving()"
+      (onClick)="save()"
+    />
+  </ng-template>
+</p-dialog>

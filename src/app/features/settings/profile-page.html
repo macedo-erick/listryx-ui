@@ -1,0 +1,70 @@
+<listryx-page-header [title]="t('profile.title')" [subtitle]="t('profile.subtitle')" />
+
+@if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else {
+  <div class="grid gap-4 lg:grid-cols-2">
+    <listryx-card [padded]="true">
+      <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+        <listryx-field
+          inputId="firstName"
+          [label]="t('profile.firstName')"
+          [error]="errorFor(f.firstName)"
+        >
+          <input pInputText id="firstName" class="w-full" [formField]="f.firstName" />
+        </listryx-field>
+
+        <listryx-field
+          inputId="lastName"
+          [label]="t('profile.lastName')"
+          [error]="errorFor(f.lastName)"
+        >
+          <input pInputText id="lastName" class="w-full" [formField]="f.lastName" />
+        </listryx-field>
+
+        <listryx-field
+          inputId="email"
+          [label]="t('profile.email')"
+          [hint]="t('profile.emailHint')"
+          [error]="errorFor(f.email)"
+        >
+          <input pInputText id="email" type="email" class="w-full" [formField]="f.email" />
+        </listryx-field>
+
+        <listryx-field
+          inputId="username"
+          [label]="t('profile.username')"
+          [hint]="t('profile.usernameHint')"
+        >
+          <input
+            pInputText
+            id="username"
+            class="w-full"
+            disabled
+            [value]="service.profile()?.username ?? ''"
+          />
+        </listryx-field>
+
+        <div class="mt-2 flex justify-end">
+          <p-button type="submit" [label]="t('common.save')" [loading]="saving()" />
+        </div>
+      </form>
+    </listryx-card>
+
+    <listryx-card [padded]="true">
+      <h2 class="m-0 text-lg font-medium text-[var(--p-text-color)]">
+        {{ t('profile.password') }}
+      </h2>
+      <p class="mt-1 mb-4 text-sm text-[var(--p-text-muted-color)]">
+        {{ t('profile.passwordMessage') }}
+      </p>
+      <p-button
+        type="button"
+        icon="pi pi-key"
+        [label]="t('profile.changePassword')"
+        severity="secondary"
+        (onClick)="openPasswordChange()"
+      />
+    </listryx-card>
+  </div>
+}

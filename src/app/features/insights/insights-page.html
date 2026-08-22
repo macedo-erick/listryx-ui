@@ -1,0 +1,113 @@
+<listryx-page-header [title]="t('insights.title')" [subtitle]="t('insights.subtitle')" />
+
+@if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else if (service.items().length === 0) {
+  <listryx-empty-state
+    icon="pi-chart-line"
+    [title]="t('insights.empty')"
+    [message]="t('insights.emptyMessage')"
+  />
+} @else {
+  <div class="flex flex-col gap-4">
+    <listryx-card [padded]="true">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="m-0 text-base font-medium text-[var(--p-text-color)]">
+          {{ t('insights.itemPrices') }}
+        </h2>
+
+        <p-select
+          [options]="itemOptions()"
+          optionLabel="text"
+          optionValue="text"
+          [filter]="true"
+          filterBy="text"
+          [showClear]="true"
+          [placeholder]="t('insights.pickItem')"
+          [ngModel]="service.selectedItem()"
+          (ngModelChange)="service.selectedItem.set($event)"
+        />
+      </div>
+
+      @if (!service.selectedItem()) {
+        <p class="m-0 py-8 text-center text-sm text-[var(--p-text-muted-color)]">
+          {{ t('insights.pickItemHint') }}
+        </p>
+      } @else if (!hasPriceTrend()) {
+        <p class="m-0 py-8 text-center text-sm text-[var(--p-text-muted-color)]">
+          {{ t('insights.notEnoughPoints') }}
+        </p>
+      } @else {
+        <listryx-chart
+          type="line"
+          [label]="t('insights.itemPricesFor', { text: selectedText() })"
+          [build]="priceChart()"
+        />
+
+        <table class="mt-4 w-full border-collapse text-sm">
+          <caption class="sr-only">
+            {{
+              t('insights.itemPricesFor', { text: selectedText() })
+            }}
+          </caption>
+          <thead>
+            <tr class="text-left text-[var(--p-text-muted-color)]">
+              <th scope="col" class="py-1 font-normal">{{ t('common.date') }}</th>
+              <th scope="col" class="py-1 font-normal">{{ t('lists.title') }}</th>
+              <th scope="col" class="py-1 text-right font-normal">{{ t('lists.unitPrice') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (point of prices(); track point.listId) {
+              <tr class="border-t border-[var(--p-content-border-color)]">
+                <td class="py-1 text-[var(--p-text-color)]">{{ date(point.at) }}</td>
+                <td class="py-1 text-[var(--p-text-color)]">{{ point.listName }}</td>
+                <td class="py-1 text-right text-[var(--p-text-color)]">
+                  {{ money(point.unitPrice) }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </listryx-card>
+
+    <listryx-card [padded]="true">
+      <h2 class="mb-3 text-base font-medium text-[var(--p-text-color)]">
+        {{ t('insights.listTotals') }}
+      </h2>
+
+      @if (!hasTotalTrend()) {
+        <p class="m-0 py-8 text-center text-sm text-[var(--p-text-muted-color)]">
+          {{ t('insights.notEnoughLists') }}
+        </p>
+      } @else {
+        <listryx-chart type="bar" [label]="t('insights.listTotals')" [build]="totalsChart()" />
+
+        <table class="mt-4 w-full border-collapse text-sm">
+          <caption class="sr-only">
+            {{
+              t('insights.listTotals')
+            }}
+          </caption>
+          <thead>
+            <tr class="text-left text-[var(--p-text-muted-color)]">
+              <th scope="col" class="py-1 font-normal">{{ t('common.date') }}</th>
+              <th scope="col" class="py-1 font-normal">{{ t('common.name') }}</th>
+              <th scope="col" class="py-1 text-right font-normal">{{ t('common.total') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (point of totals(); track point.listId) {
+              <tr class="border-t border-[var(--p-content-border-color)]">
+                <td class="py-1 text-[var(--p-text-color)]">{{ date(point.at) }}</td>
+                <td class="py-1 text-[var(--p-text-color)]">{{ point.name }}</td>
+                <td class="py-1 text-right text-[var(--p-text-color)]">{{ money(point.total) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </listryx-card>
+  </div>
+}

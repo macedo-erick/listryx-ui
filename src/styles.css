@@ -1,0 +1,69 @@
+@layer theme, base, primeng, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@import 'primeicons/primeicons.css';
+
+@plugin 'tailwindcss-primeui';
+
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
+:root {
+  color-scheme: light;
+}
+
+.app-dark {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--p-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+}
+
+:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+/*
+ * Mobile overlay guards.
+ *
+ * These rules are intentionally unlayered so they win over the `primeng` layer.
+ *
+ * The shell never scrolls the document (html/body are `overflow: hidden` above), so
+ * there is never a document scrollbar to compensate for. PrimeNG still applies
+ * `padding-right: var(--p-scrollbar-width)` to <body> while a modal is open, and it
+ * derives that value from `window.innerWidth - documentElement.offsetWidth`. If any
+ * overlay is overflowing horizontally, mobile Chrome has zoomed out to fit it and
+ * `innerWidth` is far larger than the layout width, so the "scrollbar" comes out at
+ * ~140px and the whole UI is squeezed sideways for as long as the dialog is open.
+ */
+body.p-overflow-hidden {
+  padding-right: 0;
+}
+
+/*
+ * `.p-dialog` ships with no max-width, so a dialog that is not given an explicit width
+ * (p-confirmdialog) sizes to its content and can run past the viewport edge.
+ */
+.p-dialog {
+  max-width: calc(100vw - 2rem);
+}
+
+/* Same guard for popup panels, which size themselves from their content. */
+.p-menu-overlay,
+.p-select-overlay,
+.p-popover {
+  max-width: calc(100vw - 1.5rem);
+}

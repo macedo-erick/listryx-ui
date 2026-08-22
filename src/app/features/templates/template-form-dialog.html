@@ -1,0 +1,92 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '34rem', maxWidth: '94vw' }"
+  [header]="template() ? t('templates.edit', { name: template()!.name }) : t('templates.new')"
+>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label for="name" class="text-sm text-[var(--p-text-muted-color)]">
+        {{ t('common.name') }}
+      </label>
+      <input
+        pInputText
+        id="name"
+        class="w-full"
+        autocomplete="off"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <span class="text-sm text-[var(--p-text-muted-color)]">{{ t('templates.items') }}</span>
+
+      <ul
+        class="m-0 flex list-none flex-col gap-2 p-0"
+        cdkDropList
+        (cdkDropListDropped)="drop($event)"
+      >
+        @for (item of items(); track $index) {
+          <li cdkDrag class="flex items-center gap-2">
+            <i
+              cdkDragHandle
+              class="pi pi-bars shrink-0 cursor-grab text-[var(--p-text-muted-color)]"
+              [attr.aria-label]="t('lists.reorder')"
+            ></i>
+            <input
+              pInputText
+              class="min-w-0 flex-1"
+              autocomplete="off"
+              [placeholder]="t('templates.itemText')"
+              [ngModel]="item.text"
+              (ngModelChange)="setText($index, $event)"
+            />
+            <div class="w-24 shrink-0">
+              <p-inputnumber
+                [locale]="locale()"
+                [min]="0"
+                [maxFractionDigits]="2"
+                [fluid]="true"
+                inputStyleClass="w-full"
+                [placeholder]="t('lists.quantity')"
+                [ngModel]="item.defaultQuantity"
+                (ngModelChange)="setQuantity($index, $event)"
+              />
+            </div>
+            <p-button
+              styleClass="shrink-0"
+              [text]="true"
+              [rounded]="true"
+              severity="danger"
+              size="small"
+              icon="pi pi-times"
+              [ariaLabel]="t('common.delete')"
+              (onClick)="removeRow($index)"
+            />
+          </li>
+        }
+      </ul>
+
+      <p-button
+        [text]="true"
+        size="small"
+        icon="pi pi-plus"
+        [label]="t('templates.addItem')"
+        (onClick)="addRow()"
+      />
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button [text]="true" [label]="t('common.cancel')" (onClick)="visible.set(false)" />
+    <p-button
+      [label]="t('common.save')"
+      [disabled]="!canSave()"
+      [loading]="saving()"
+      (onClick)="save()"
+    />
+  </ng-template>
+</p-dialog>

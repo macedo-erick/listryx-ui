@@ -1,0 +1,48 @@
+<listryx-page-header [title]="t('templates.title')" [subtitle]="t('templates.subtitle')">
+  <p-button icon="pi pi-plus" [label]="t('templates.new')" (onClick)="openCreate()" />
+</listryx-page-header>
+
+@if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else if (templates().length === 0) {
+  <listryx-empty-state
+    icon="pi-clone"
+    [title]="t('templates.empty')"
+    [message]="t('templates.emptyMessage')"
+  />
+} @else {
+  <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    @for (template of templates(); track template.id) {
+      <listryx-card [padded]="true">
+        <div class="flex items-start gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="m-0 truncate font-medium text-[var(--p-text-color)]">{{ template.name }}</p>
+            <p class="m-0 text-sm text-[var(--p-text-muted-color)]">
+              {{ t('templates.itemCount', { count: template.itemCount }) }}
+            </p>
+          </div>
+
+          <p-button
+            [text]="true"
+            [rounded]="true"
+            size="small"
+            icon="pi pi-pencil"
+            [ariaLabel]="t('templates.edit', { name: template.name })"
+            (onClick)="openEdit(template)"
+          />
+          <p-button
+            [text]="true"
+            [rounded]="true"
+            size="small"
+            severity="danger"
+            icon="pi pi-trash"
+            [ariaLabel]="t('templates.delete', { name: template.name })"
+            (onClick)="remove(template)"
+          />
+        </div>
+      </listryx-card>
+    }
+  </div>
+}
+
+<listryx-template-form-dialog [(visible)]="dialogOpen" [template]="selected()" />

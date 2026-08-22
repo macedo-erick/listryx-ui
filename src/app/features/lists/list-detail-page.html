@@ -1,0 +1,239 @@
+@if (isLoading() && !list()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else if (list(); as list) {
+  <div class="mx-auto flex h-full max-w-2xl flex-col">
+    <div class="mb-4 flex items-start gap-2">
+      <p-button
+        [text]="true"
+        [rounded]="true"
+        icon="pi pi-arrow-left"
+        [ariaLabel]="t('common.back')"
+        (onClick)="back()"
+      />
+
+      <div class="min-w-0 flex-1">
+        <h1 class="m-0 truncate text-xl font-semibold text-[var(--p-text-color)]">
+          {{ list.name }}
+        </h1>
+        <p class="m-0 text-sm text-[var(--p-text-muted-color)]">
+          {{ list.checkedCount }} / {{ list.itemCount }}
+          @if (list.status === 'closed') {
+            · {{ t('lists.closed') }}
+          }
+        </p>
+      </div>
+
+      <p-button
+        [text]="true"
+        [rounded]="true"
+        icon="pi pi-ellipsis-v"
+        [ariaLabel]="t('common.moreActions')"
+        (onClick)="menu.toggle($event)"
+      />
+      <p-menu #menu [model]="menuItems()" [popup]="true" />
+    </div>
+
+    @if (list.items.length === 0) {
+      <listryx-empty-state
+        icon="pi-plus-circle"
+        [title]="t('lists.emptyItems')"
+        [message]="t('lists.emptyItemsMessage')"
+      />
+    } @else {
+      <ul
+        class="m-0 flex list-none flex-col gap-1 p-0"
+        cdkDropList
+        (cdkDropListDropped)="drop($event)"
+      >
+        @for (item of pending(); track item.id) {
+          <li
+            cdkDrag
+            class="rounded-lg border border-[var(--p-content-border-color)] bg-[var(--p-content-background)]"
+          >
+            <div class="flex items-center gap-3 p-3">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="item.checked"
+                (onChange)="toggle(item)"
+                [inputId]="'check-' + item.id"
+              />
+
+              <button
+                type="button"
+                class="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                [attr.aria-label]="t('lists.editItem', { text: item.text })"
+                [attr.aria-expanded]="expandedItem() === item.id"
+                (click)="expand(item)"
+              >
+                <span class="block truncate text-[var(--p-text-color)]">{{ item.text }}</span>
+                @if (item.quantity || item.unitPrice) {
+                  <span class="block text-sm text-[var(--p-text-muted-color)]">
+                    @if (item.quantity) {
+                      {{ quantity(item.quantity) }}×
+                    }
+                    @if (item.unitPrice) {
+                      {{ money(item.unitPrice) }}
+                    }
+                    @if (item.subtotal) {
+                      = {{ money(item.subtotal) }}
+                    }
+                  </span>
+                }
+              </button>
+
+              <p-button
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                severity="danger"
+                icon="pi pi-trash"
+                [ariaLabel]="t('lists.removeItem', { text: item.text })"
+                (onClick)="removeItem(item)"
+              />
+
+              <i
+                cdkDragHandle
+                class="pi pi-bars cursor-grab text-[var(--p-text-muted-color)]"
+                [attr.aria-label]="t('lists.reorder')"
+              ></i>
+            </div>
+
+            @if (expandedItem() === item.id) {
+              <div class="flex flex-col gap-3 border-t border-[var(--p-content-border-color)] p-3">
+                <div class="flex flex-col gap-1">
+                  <label [for]="'text-' + item.id" class="text-xs text-[var(--p-text-muted-color)]">
+                    {{ t('common.name') }}
+                  </label>
+                  <input
+                    pInputText
+                    class="w-full"
+                    [id]="'text-' + item.id"
+                    [ngModel]="item.text"
+                    (ngModelChange)="rename(item, $event)"
+                    [ngModelOptions]="{ updateOn: 'blur' }"
+                  />
+                </div>
+
+                <div class="flex gap-3">
+                  <div class="flex min-w-0 flex-1 flex-col gap-1">
+                    <label
+                      [for]="'qty-' + item.id"
+                      class="text-xs text-[var(--p-text-muted-color)]"
+                    >
+                      {{ t('lists.quantity') }}
+                    </label>
+                    <p-inputnumber
+                      [inputId]="'qty-' + item.id"
+                      [locale]="locale()"
+                      [min]="0"
+                      [maxFractionDigits]="2"
+                      [fluid]="true"
+                      inputStyleClass="w-full"
+                      [ngModel]="quantityOf(item)"
+                      (ngModelChange)="setQuantity(item, $event)"
+                    />
+                  </div>
+
+                  <div class="flex min-w-0 flex-1 flex-col gap-1">
+                    <label
+                      [for]="'price-' + item.id"
+                      class="text-xs text-[var(--p-text-muted-color)]"
+                    >
+                      {{ t('lists.unitPrice') }}
+                    </label>
+                    <p-inputnumber
+                      [inputId]="'price-' + item.id"
+                      mode="currency"
+                      [currency]="currency()"
+                      [locale]="locale()"
+                      [min]="0"
+                      [fluid]="true"
+                      inputStyleClass="w-full"
+                      [ngModel]="priceOf(item)"
+                      (ngModelChange)="setPrice(item, $event)"
+                    />
+                  </div>
+                </div>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+
+      @if (done().length > 0) {
+        <button
+          type="button"
+          class="mt-4 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-2 text-sm text-[var(--p-text-muted-color)]"
+          (click)="doneOpen.update((open) => !open)"
+        >
+          <i
+            [class]="doneOpen() ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+            aria-hidden="true"
+          ></i>
+          {{ t('lists.doneCount', { count: done().length }) }}
+        </button>
+
+        @if (doneOpen()) {
+          <ul class="m-0 flex list-none flex-col gap-1 p-0">
+            @for (item of done(); track item.id) {
+              <li class="flex items-center gap-3 rounded-lg p-3 opacity-60">
+                <p-checkbox
+                  [binary]="true"
+                  [ngModel]="item.checked"
+                  (onChange)="toggle(item)"
+                  [inputId]="'done-' + item.id"
+                />
+                <span class="min-w-0 flex-1 truncate text-[var(--p-text-color)] line-through">
+                  {{ item.text }}
+                </span>
+                @if (item.subtotal) {
+                  <span class="text-sm text-[var(--p-text-muted-color)]">
+                    {{ money(item.subtotal) }}
+                  </span>
+                }
+              </li>
+            }
+          </ul>
+        }
+      }
+    }
+  </div>
+
+  <div
+    class="fixed inset-x-0 bottom-0 border-t border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-3 sm:bottom-0"
+  >
+    <div class="mx-auto flex max-w-2xl items-center gap-2">
+      <input
+        pInputText
+        class="w-full min-w-0 flex-1"
+        autocomplete="off"
+        [placeholder]="t('lists.quickAdd')"
+        [ngModel]="quickAdd()"
+        (ngModelChange)="quickAdd.set($event)"
+        (keyup.enter)="add()"
+        [disabled]="list.status === 'closed'"
+      />
+      <p-button
+        icon="pi pi-plus"
+        [ariaLabel]="t('lists.add')"
+        [disabled]="list.status === 'closed'"
+        (onClick)="add()"
+      />
+
+      @if (list.pricedItemCount > 0) {
+        <span class="ml-2 whitespace-nowrap font-medium text-[var(--p-text-color)]">
+          {{ money(list.checkedTotal ?? '0') }}
+          <span class="text-sm font-normal text-[var(--p-text-muted-color)]">
+            / {{ money(list.total) }}
+          </span>
+        </span>
+      }
+    </div>
+  </div>
+
+  <listryx-save-as-template-dialog
+    [(visible)]="templateDialogOpen"
+    [listId]="list.id"
+    [listName]="list.name"
+  />
+}

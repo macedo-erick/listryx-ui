@@ -1,0 +1,71 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  (onShow)="onShow()"
+  [modal]="true"
+  [draggable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: '28rem', maxWidth: '92vw' }"
+  [header]="t('lists.new')"
+>
+  <div class="flex flex-col gap-4">
+    <p-selectbutton
+      [options]="sourceOptions()"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+      [ngModel]="source()"
+      (ngModelChange)="source.set($event)"
+    />
+
+    @if (source() === 'template') {
+      <div class="flex flex-col gap-1">
+        <label for="template" class="text-sm text-[var(--p-text-muted-color)]">
+          {{ t('lists.template') }}
+        </label>
+        <p-select
+          [fluid]="true"
+          inputId="template"
+          [options]="templateOptions()"
+          optionLabel="name"
+          optionValue="id"
+          [filter]="true"
+          filterBy="name"
+          [placeholder]="t('lists.pickTemplate')"
+          [ngModel]="templateId()"
+          (ngModelChange)="pickTemplate($event)"
+        />
+        @if (selectedTemplate(); as template) {
+          <p class="m-0 text-sm text-[var(--p-text-muted-color)]">
+            {{ t('lists.templateItems', { count: template.itemCount }) }}
+          </p>
+        }
+      </div>
+    }
+
+    <div class="flex flex-col gap-1">
+      <label for="listName" class="text-sm text-[var(--p-text-muted-color)]">
+        {{ t('common.name') }}
+      </label>
+      <input
+        pInputText
+        id="listName"
+        class="w-full"
+        autocomplete="off"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+        (keyup.enter)="save()"
+      />
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button [text]="true" [label]="t('common.cancel')" (onClick)="visible.set(false)" />
+    <p-button
+      [label]="t('common.create')"
+      [disabled]="!canSave()"
+      [loading]="saving()"
+      (onClick)="save()"
+    />
+  </ng-template>
+</p-dialog>
