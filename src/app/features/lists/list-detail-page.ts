@@ -159,9 +159,19 @@ export class ListDetailPage {
     const pending = [...this.pending()];
     moveItemInArray(pending, event.previousIndex, event.currentIndex);
 
-    const order = [...pending, ...this.done()].map((item) => item.id);
+    const items = [...pending, ...this.done()];
 
-    this.service.reorderItems(this.id(), order).subscribe((updated) => this.apply(updated));
+    this.apply({ ...list, items });
+
+    this.service
+      .reorderItems(
+        this.id(),
+        items.map((item) => item.id),
+      )
+      .subscribe({
+        next: (updated) => this.apply(updated),
+        error: () => this.apply(list),
+      });
   }
 
   protected back(): void {
