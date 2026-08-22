@@ -67,3 +67,107 @@ body.p-overflow-hidden {
 .p-popover {
   max-width: calc(100vw - 1.5rem);
 }
+
+/*
+ * iOS Safari zooms into any text field it focuses whose font size is under 16px, and it
+ * never zooms back out afterwards. Aura sets `typography.fontSize` to 0.875rem and every
+ * form field inherits it, so on a phone each tap on an input scaled the whole app up.
+ *
+ * Raising fields to 16px on coarse pointers removes the trigger. The other common fix,
+ * `maximum-scale=1` on the viewport meta, works too but takes pinch-to-zoom away from
+ * everyone (WCAG 1.4.4), so it is deliberately not used here.
+ *
+ * Unlayered, like the guards above: this has to win over the `primeng` layer and over any
+ * `text-*` utility a template puts on a field.
+ */
+@media (pointer: coarse) {
+  :root {
+    /* Every PrimeNG field resolves its font size from these two tokens. */
+    --p-form-field-font-size: 16px;
+    --p-form-field-sm-font-size: 16px;
+  }
+
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file']),
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']) {
+    font-size: 16px;
+  }
+}
+
+/*
+ * Drag and drop.
+ *
+ * The CDK ships no styling of its own, so without these rules the preview is an unstyled
+ * clone with no elevation, the vacated slot is an invisible hole and the rows around it
+ * snap to their new positions with no transition.
+ *
+ * Unlayered for the same reason as the rules above: the dragged row carries the Tailwind
+ * utilities from its template, and those would otherwise win over the drag state.
+ */
+.cdk-drag-handle {
+  /* `touch-action: none` keeps a drag that starts on the handle from scrolling the page
+     instead; the padding gives the icon a finger-sized target. */
+  touch-action: none;
+  padding: 0.25rem;
+  cursor: grab;
+}
+
+.cdk-drop-list-dragging .cdk-drag-handle,
+.cdk-drag-preview .cdk-drag-handle {
+  cursor: grabbing;
+}
+
+/* The clone that follows the pointer: lifted off the page, never transparent. */
+.cdk-drag-preview {
+  background: var(--p-content-background);
+  border-radius: 0.5rem; /* matches the `rounded-lg` on the list rows */
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.12),
+    0 12px 28px -8px rgb(0 0 0 / 0.35);
+  animation: drag-lift 160ms ease-out;
+  cursor: grabbing;
+}
+
+/*
+ * Only opacity and box-shadow animate here. The CDK drives the preview's `transform` from
+ * pointer movement, so animating transform would fight it.
+ */
+@keyframes drag-lift {
+  from {
+    opacity: 0.75;
+    box-shadow: 0 0 0 rgb(0 0 0 / 0);
+  }
+}
+
+/* The gap left behind reads as the slot the row will drop into, not a ghost of the row. */
+.cdk-drag-placeholder {
+  border: 1px dashed var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color), transparent 92%);
+}
+
+.cdk-drag-placeholder > * {
+  visibility: hidden;
+}
+
+/* Rows sliding aside during the drag, and the preview settling back on release. */
+.cdk-drag-animating,
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* A drag should not leave the row's text selected behind it. */
+.cdk-drop-list-dragging {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdk-drag-animating,
+  .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+    transition: none;
+  }
+
+  .cdk-drag-preview {
+    animation: none;
+  }
+}

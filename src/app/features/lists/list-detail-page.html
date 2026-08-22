@@ -43,6 +43,7 @@
       <ul
         class="m-0 flex list-none flex-col gap-1 p-0"
         cdkDropList
+        cdkDropListLockAxis="y"
         (cdkDropListDropped)="drop($event)"
       >
         @for (item of pending(); track item.id) {
