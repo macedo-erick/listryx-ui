@@ -36,34 +36,87 @@ body {
   outline-offset: 2px;
 }
 
-/*
- * Mobile overlay guards.
- *
- * These rules are intentionally unlayered so they win over the `primeng` layer.
- *
- * The shell never scrolls the document (html/body are `overflow: hidden` above), so
- * there is never a document scrollbar to compensate for. PrimeNG still applies
- * `padding-right: var(--p-scrollbar-width)` to <body> while a modal is open, and it
- * derives that value from `window.innerWidth - documentElement.offsetWidth`. If any
- * overlay is overflowing horizontally, mobile Chrome has zoomed out to fit it and
- * `innerWidth` is far larger than the layout width, so the "scrollbar" comes out at
- * ~140px and the whole UI is squeezed sideways for as long as the dialog is open.
- */
 body.p-overflow-hidden {
   padding-right: 0;
 }
 
-/*
- * `.p-dialog` ships with no max-width, so a dialog that is not given an explicit width
- * (p-confirmdialog) sizes to its content and can run past the viewport edge.
- */
 .p-dialog {
   max-width: calc(100vw - 2rem);
 }
 
-/* Same guard for popup panels, which size themselves from their content. */
 .p-menu-overlay,
 .p-select-overlay,
 .p-popover {
   max-width: calc(100vw - 1.5rem);
+}
+
+@media (pointer: coarse) {
+  :root {
+    --p-form-field-font-size: 16px;
+    --p-form-field-sm-font-size: 16px;
+  }
+
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file']),
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']) {
+    font-size: 16px;
+  }
+}
+
+.cdk-drag-handle {
+  touch-action: none;
+  padding: 0.25rem;
+  cursor: grab;
+}
+
+.cdk-drop-list-dragging .cdk-drag-handle,
+.cdk-drag-preview .cdk-drag-handle {
+  cursor: grabbing;
+}
+
+.cdk-drag-preview {
+  background: var(--p-content-background);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.12),
+    0 12px 28px -8px rgb(0 0 0 / 0.35);
+  animation: drag-lift 160ms ease-out;
+  cursor: grabbing;
+}
+
+@keyframes drag-lift {
+  from {
+    opacity: 0.75;
+    box-shadow: 0 0 0 rgb(0 0 0 / 0);
+  }
+}
+
+.cdk-drag-placeholder {
+  border: 1px dashed var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color), transparent 92%);
+}
+
+.cdk-drag-placeholder > * {
+  visibility: hidden;
+}
+
+.cdk-drag-animating,
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.cdk-drop-list-dragging {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdk-drag-animating,
+  .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+    transition: none;
+  }
+
+  .cdk-drag-preview {
+    animation: none;
+  }
 }
