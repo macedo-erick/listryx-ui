@@ -233,6 +233,13 @@
     </div>
   </div>
 
+  <listryx-list-rename-dialog
+    [(visible)]="renameDialogOpen"
+    [listId]="list.id"
+    [listName]="list.name"
+    (renamed)="onRenamed($event)"
+  />
+
   <listryx-save-as-template-dialog
     [(visible)]="templateDialogOpen"
     [listId]="list.id"
