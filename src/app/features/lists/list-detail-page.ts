@@ -21,6 +21,7 @@ import { ListryxEmptyState } from '../../shared/ui/empty-state';
 import { formatMoney, formatQuantity, toDecimalString, toNumber } from '../../shared/util/money';
 import { currentCurrency } from '../../shared/util/currency';
 import { currentLocale } from '../../shared/util/locale';
+import { ListRenameDialog } from './list-rename-dialog';
 import { ListService } from './list.service';
 import { SaveAsTemplateDialog } from './save-as-template-dialog';
 
@@ -37,6 +38,7 @@ import { SaveAsTemplateDialog } from './save-as-template-dialog';
     InputNumber,
     Menu,
     ListryxEmptyState,
+    ListRenameDialog,
     SaveAsTemplateDialog,
   ],
   templateUrl: './list-detail-page.html',
@@ -67,11 +69,17 @@ export class ListDetailPage {
   protected readonly expandedItem = signal<string | null>(null);
   protected readonly doneOpen = signal(false);
   protected readonly templateDialogOpen = signal(false);
+  protected readonly renameDialogOpen = signal(false);
 
   protected readonly menuItems = computed(() => {
     const list = this.list();
 
     return [
+      {
+        label: this.t('lists.rename'),
+        icon: 'pi pi-pencil',
+        command: () => this.renameDialogOpen.set(true),
+      },
       {
         label: this.t('lists.saveAsTemplate'),
         icon: 'pi pi-clone',
@@ -180,6 +188,10 @@ export class ListDetailPage {
 
   protected expand(item: ListItem): void {
     this.expandedItem.update((current) => (current === item.id ? null : item.id));
+  }
+
+  protected onRenamed(list: ListDetail): void {
+    this.apply(list);
   }
 
   private close(): void {

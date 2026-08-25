@@ -42,6 +42,7 @@
     "closed": "Fechadas",
     "close": "Fechar lista",
     "reopen": "Reabrir lista",
+    "rename": "Renomear lista",
     "empty": "Nenhuma lista ainda",
     "emptyMessage": "Comece do zero ou a partir de um modelo já salvo.",
     "emptyItems": "Nada nesta lista ainda",
