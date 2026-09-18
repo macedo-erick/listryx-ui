@@ -20,6 +20,7 @@ import { TemplateService } from './template.service';
 
 interface EditableItem {
   text: string;
+  category: string;
   defaultQuantity: number | null;
 }
 
@@ -51,6 +52,22 @@ export class TemplateFormDialog {
 
   protected readonly canSave = computed(() => this.name().trim().length > 0 && !this.saving());
 
+  protected readonly categorySuggestions = computed(() => {
+    const seen = new Set<string>();
+    const suggestions: string[] = [];
+
+    for (const item of this.items()) {
+      const category = item.category.trim();
+
+      if (category !== '' && !seen.has(category)) {
+        seen.add(category);
+        suggestions.push(category);
+      }
+    }
+
+    return suggestions;
+  });
+
   constructor() {
     effect(() => {
       if (!this.visible()) {
@@ -61,7 +78,7 @@ export class TemplateFormDialog {
 
       if (summary === null) {
         this.name.set('');
-        this.items.set([{ text: '', defaultQuantity: null }]);
+        this.items.set([{ text: '', category: '', defaultQuantity: null }]);
 
         return;
       }
@@ -71,6 +88,7 @@ export class TemplateFormDialog {
         this.items.set(
           detail.items.map((item) => ({
             text: item.text,
+            category: item.category ?? '',
             defaultQuantity: toNumber(item.defaultQuantity),
           })),
         );
@@ -82,6 +100,12 @@ export class TemplateFormDialog {
     this.items.update((items) => items.map((item, i) => (i === index ? { ...item, text } : item)));
   }
 
+  protected setCategory(index: number, category: string): void {
+    this.items.update((items) =>
+      items.map((item, i) => (i === index ? { ...item, category } : item)),
+    );
+  }
+
   protected setQuantity(index: number, defaultQuantity: number | null): void {
     this.items.update((items) =>
       items.map((item, i) => (i === index ? { ...item, defaultQuantity } : item)),
@@ -89,7 +113,7 @@ export class TemplateFormDialog {
   }
 
   protected addRow(): void {
-    this.items.update((items) => [...items, { text: '', defaultQuantity: null }]);
+    this.items.update((items) => [...items, { text: '', category: '', defaultQuantity: null }]);
   }
 
   protected removeRow(index: number): void {
@@ -118,6 +142,7 @@ export class TemplateFormDialog {
         .filter((item) => item.text.trim() !== '')
         .map((item) => ({
           text: item.text.trim(),
+          category: item.category.trim() === '' ? null : item.category.trim(),
           defaultQuantity: toDecimalString(item.defaultQuantity),
         })),
     };

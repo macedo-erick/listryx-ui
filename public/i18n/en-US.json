@@ -65,7 +65,11 @@
     "createNewTemplate": "Create a new template",
     "templateSaved": "Template saved",
     "deleteHeader": "Delete this list?",
-    "deleteMessage": "The list and its items will be removed. This cannot be undone."
+    "deleteMessage": "The list and its items will be removed. This cannot be undone.",
+    "category": "Category",
+    "categoryPlaceholder": "No category",
+    "uncategorized": "Uncategorized",
+    "toggleCategory": "{{name}} category"
   },
   "templates": {
     "title": "Templates",
@@ -80,7 +84,8 @@
     "edit": "Edit {{name}}",
     "delete": "Delete {{name}}",
     "deleteHeader": "Delete this template?",
-    "deleteMessage": "{{name}} will be removed. Lists already created from it are not affected."
+    "deleteMessage": "{{name}} will be removed. Lists already created from it are not affected.",
+    "categoryPlaceholder": "No category"
   },
   "insights": {
     "title": "Trends",

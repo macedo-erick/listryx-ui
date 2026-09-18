@@ -31,46 +31,65 @@
         (cdkDropListDropped)="drop($event)"
       >
         @for (item of items(); track $index) {
-          <li cdkDrag class="flex items-center gap-2">
-            <button
+          <li cdkDrag class="flex flex-col gap-2 rounded-lg border border-[var(--p-content-border-color)] p-2">
+            <div class="flex items-center gap-2">
+              <button
               type="button"
-              cdkDragHandle
-              class="pi pi-bars shrink-0 cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
-              [attr.aria-label]="t('lists.reorder')"
-            ></button>
-            <input
-              pInputText
-              class="min-w-0 flex-1"
-              autocomplete="off"
-              [placeholder]="t('templates.itemText')"
-              [ngModel]="item.text"
-              (ngModelChange)="setText($index, $event)"
-            />
-            <div class="w-24 shrink-0">
-              <p-inputnumber
-                [locale]="locale()"
-                [min]="0"
-                [maxFractionDigits]="2"
-                [fluid]="true"
-                inputStyleClass="w-full"
-                [placeholder]="t('lists.quantity')"
-                [ngModel]="item.defaultQuantity"
-                (ngModelChange)="setQuantity($index, $event)"
+                cdkDragHandle
+                class="pi pi-bars shrink-0 cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
+                [attr.aria-label]="t('lists.reorder')"
+              ></button>
+              <input
+                pInputText
+                class="min-w-0 flex-1"
+                autocomplete="off"
+                [placeholder]="t('templates.itemText')"
+                [ngModel]="item.text"
+                (ngModelChange)="setText($index, $event)"
+              />
+              <p-button
+                styleClass="shrink-0"
+                [text]="true"
+                [rounded]="true"
+                severity="danger"
+                size="small"
+                icon="pi pi-times"
+                [ariaLabel]="t('common.delete')"
+                (onClick)="removeRow($index)"
               />
             </div>
-            <p-button
-              styleClass="shrink-0"
-              [text]="true"
-              [rounded]="true"
-              severity="danger"
-              size="small"
-              icon="pi pi-times"
-              [ariaLabel]="t('common.delete')"
-              (onClick)="removeRow($index)"
-            />
+            <div class="flex items-center gap-2 pl-6">
+              <input
+                pInputText
+                class="min-w-0 flex-1"
+                autocomplete="off"
+                list="template-categories"
+                [placeholder]="t('templates.categoryPlaceholder')"
+                [ngModel]="item.category"
+                (ngModelChange)="setCategory($index, $event)"
+              />
+              <div class="w-24 shrink-0">
+                <p-inputnumber
+                  [locale]="locale()"
+                  [min]="0"
+                  [maxFractionDigits]="2"
+                  [fluid]="true"
+                  inputStyleClass="w-full"
+                  [placeholder]="t('lists.quantity')"
+                  [ngModel]="item.defaultQuantity"
+                  (ngModelChange)="setQuantity($index, $event)"
+                />
+              </div>
+            </div>
           </li>
         }
       </ul>
+
+      <datalist id="template-categories">
+        @for (name of categorySuggestions(); track name) {
+          <option [value]="name"></option>
+        }
+      </datalist>
 
       <p-button
         [text]="true"

@@ -40,127 +40,212 @@
         [message]="t('lists.emptyItemsMessage')"
       />
     } @else {
-      <ul
-        class="m-0 flex list-none flex-col gap-1 p-0"
-        cdkDropList
-        cdkDropListLockAxis="y"
-        (cdkDropListDropped)="drop($event)"
-      >
-        @for (item of pending(); track item.id) {
-          <li
-            cdkDrag
-            class="rounded-lg border border-[var(--p-content-border-color)] bg-[var(--p-content-background)]"
-          >
-            <div class="flex select-none items-center gap-3 p-3">
-              <p-checkbox
-                [binary]="true"
-                [ngModel]="item.checked"
-                (onChange)="toggle(item)"
-                [inputId]="'check-' + item.id"
-              />
-
-              <button
-                type="button"
-                class="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
-                [attr.aria-label]="t('lists.editItem', { text: item.text })"
-                [attr.aria-expanded]="expandedItem() === item.id"
-                (click)="expand(item)"
+      <div class="flex flex-col gap-3">
+        @for (group of categoryGroups(); track group.key) {
+          <div>
+            <button
+              type="button"
+              class="mb-1 flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-1 text-left"
+              [attr.aria-expanded]="group.expanded"
+              [attr.aria-label]="t('lists.toggleCategory', { name: group.name ?? t('lists.uncategorized') })"
+              (click)="toggleCategory(group.key)"
+            >
+              <i
+                [class]="group.expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                aria-hidden="true"
+              ></i>
+              <span
+                class="flex-1 text-xs font-semibold tracking-wide text-[var(--p-text-muted-color)] uppercase"
               >
-                <span class="block truncate text-[var(--p-text-color)]">{{ item.text }}</span>
-                @if (item.quantity || item.unitPrice) {
-                  <span class="block text-sm text-[var(--p-text-muted-color)]">
-                    @if (item.quantity) {
-                      {{ quantity(item.quantity) }}×
-                    }
-                    @if (item.unitPrice) {
-                      {{ money(item.unitPrice) }}
-                    }
-                    @if (item.subtotal) {
-                      = {{ money(item.subtotal) }}
-                    }
-                  </span>
-                }
-              </button>
+                {{ group.name ?? t('lists.uncategorized') }}
+              </span>
+              <span class="text-xs font-medium text-[var(--p-text-muted-color)]">
+                {{ group.items.length }}
+              </span>
+            </button>
 
-              <p-button
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                severity="danger"
-                icon="pi pi-trash"
-                [ariaLabel]="t('lists.removeItem', { text: item.text })"
-                (onClick)="removeItem(item)"
-              />
+            @if (group.expanded) {
+              <ul
+                class="m-0 flex list-none flex-col gap-1 p-0"
+                cdkDropList
+                cdkDropListLockAxis="y"
+                (cdkDropListDropped)="drop($event, group.items)"
+              >
+                @for (item of group.items; track item.id) {
+                  <li
+                    cdkDrag
+                    class="rounded-lg border border-[var(--p-content-border-color)] bg-[var(--p-content-background)]"
+                  >
+                    <div class="flex select-none items-center gap-3 p-3">
+                      <p-checkbox
+                        [binary]="true"
+                        [ngModel]="item.checked"
+                        (onChange)="toggle(item)"
+                        [inputId]="'check-' + item.id"
+                      />
 
-              <button
+                      <button
+                        type="button"
+                        class="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                        [attr.aria-label]="t('lists.editItem', { text: item.text })"
+                        [attr.aria-expanded]="expandedItem() === item.id"
+                        (click)="expand(item)"
+                      >
+                        <span class="block truncate text-[var(--p-text-color)]">{{
+                          item.text
+                        }}</span>
+                        @if (item.quantity || item.unitPrice) {
+                          <span class="block text-sm text-[var(--p-text-muted-color)]">
+                            @if (item.quantity) {
+                              {{ quantity(item.quantity) }}×
+                            }
+                            @if (item.unitPrice) {
+                              {{ money(item.unitPrice) }}
+                            }
+                            @if (item.subtotal) {
+                              = {{ money(item.subtotal) }}
+                            }
+                          </span>
+                        }
+                      </button>
+
+                      <p-button
+                        [text]="true"
+                        [rounded]="true"
+                        size="small"
+                        severity="danger"
+                        icon="pi pi-trash"
+                        [ariaLabel]="t('lists.removeItem', { text: item.text })"
+                        (onClick)="removeItem(item)"
+                      />
+
+                      <button
                 type="button"
-                cdkDragHandle
-                class="pi pi-bars cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
-                [attr.aria-label]="t('lists.reorder')"
-              ></button>
-            </div>
+                        cdkDragHandle
+                        class="pi pi-bars cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
+                        [attr.aria-label]="t('lists.reorder')"
+                      ></button>
+                    </div>
 
-            @if (expandedItem() === item.id) {
-              <div class="flex flex-col gap-3 border-t border-[var(--p-content-border-color)] p-3">
-                <div class="flex flex-col gap-1">
-                  <label [for]="'text-' + item.id" class="text-xs text-[var(--p-text-muted-color)]">
-                    {{ t('common.name') }}
-                  </label>
-                  <input
-                    pInputText
-                    class="w-full"
-                    [id]="'text-' + item.id"
-                    [ngModel]="item.text"
-                    (ngModelChange)="rename(item, $event)"
-                    [ngModelOptions]="{ updateOn: 'blur' }"
-                  />
-                </div>
+                    @if (expandedItem() === item.id) {
+                      <div
+                        class="flex flex-col gap-3 border-t border-[var(--p-content-border-color)] p-3"
+                      >
+                        <div class="flex flex-col gap-1">
+                          <label
+                            [for]="'text-' + item.id"
+                            class="text-xs text-[var(--p-text-muted-color)]"
+                          >
+                            {{ t('common.name') }}
+                          </label>
+                          <input
+                            pInputText
+                            class="w-full"
+                            [id]="'text-' + item.id"
+                            [ngModel]="item.text"
+                            (ngModelChange)="rename(item, $event)"
+                            [ngModelOptions]="{ updateOn: 'blur' }"
+                          />
+                        </div>
 
-                <div class="flex gap-3">
-                  <div class="flex min-w-0 flex-1 flex-col gap-1">
-                    <label
-                      [for]="'qty-' + item.id"
-                      class="text-xs text-[var(--p-text-muted-color)]"
-                    >
-                      {{ t('lists.quantity') }}
-                    </label>
-                    <p-inputnumber
-                      [inputId]="'qty-' + item.id"
-                      [locale]="locale()"
-                      [min]="0"
-                      [maxFractionDigits]="2"
-                      [fluid]="true"
-                      inputStyleClass="w-full"
-                      [ngModel]="quantityOf(item)"
-                      (ngModelChange)="setQuantity(item, $event)"
-                    />
-                  </div>
+                        <div class="flex gap-3">
+                          <div class="flex min-w-0 flex-1 flex-col gap-1">
+                            <label
+                              [for]="'qty-' + item.id"
+                              class="text-xs text-[var(--p-text-muted-color)]"
+                            >
+                              {{ t('lists.quantity') }}
+                            </label>
+                            <p-inputnumber
+                              [inputId]="'qty-' + item.id"
+                              [locale]="locale()"
+                              [min]="0"
+                              [maxFractionDigits]="2"
+                              [fluid]="true"
+                              inputStyleClass="w-full"
+                              [ngModel]="quantityOf(item)"
+                              (ngModelChange)="setQuantity(item, $event)"
+                            />
+                          </div>
 
-                  <div class="flex min-w-0 flex-1 flex-col gap-1">
-                    <label
-                      [for]="'price-' + item.id"
-                      class="text-xs text-[var(--p-text-muted-color)]"
-                    >
-                      {{ t('lists.unitPrice') }}
-                    </label>
-                    <p-inputnumber
-                      [inputId]="'price-' + item.id"
-                      mode="currency"
-                      [currency]="currency()"
-                      [locale]="locale()"
-                      [min]="0"
-                      [fluid]="true"
-                      inputStyleClass="w-full"
-                      [ngModel]="priceOf(item)"
-                      (ngModelChange)="setPrice(item, $event)"
-                    />
-                  </div>
-                </div>
-              </div>
+                          <div class="flex min-w-0 flex-1 flex-col gap-1">
+                            <label
+                              [for]="'price-' + item.id"
+                              class="text-xs text-[var(--p-text-muted-color)]"
+                            >
+                              {{ t('lists.unitPrice') }}
+                            </label>
+                            <p-inputnumber
+                              [inputId]="'price-' + item.id"
+                              mode="currency"
+                              [currency]="currency()"
+                              [locale]="locale()"
+                              [min]="0"
+                              [fluid]="true"
+                              inputStyleClass="w-full"
+                              [ngModel]="priceOf(item)"
+                              (ngModelChange)="setPrice(item, $event)"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                          <label
+                            [for]="'category-' + item.id"
+                            class="text-xs text-[var(--p-text-muted-color)]"
+                          >
+                            {{ t('lists.category') }}
+                          </label>
+                          <input
+                            pInputText
+                            class="w-full"
+                            [id]="'category-' + item.id"
+                            [placeholder]="t('lists.categoryPlaceholder')"
+                            [ngModel]="item.category"
+                            (ngModelChange)="setCategory(item, $event)"
+                            [ngModelOptions]="{ updateOn: 'blur' }"
+                          />
+
+                          @if (categorySuggestions().length > 0) {
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                              <button
+                                type="button"
+                                class="cursor-pointer rounded-full border px-2.5 py-1 text-xs"
+                                [class]="
+                                  item.category === null
+                                    ? 'border-[var(--p-primary-color)] bg-[var(--p-primary-color)] text-[var(--p-primary-contrast-color)]'
+                                    : 'border-[var(--p-content-border-color)] text-[var(--p-text-muted-color)]'
+                                "
+                                (click)="setCategory(item, '')"
+                              >
+                                {{ t('lists.uncategorized') }}
+                              </button>
+                              @for (name of categorySuggestions(); track name) {
+                                <button
+                                  type="button"
+                                  class="cursor-pointer rounded-full border px-2.5 py-1 text-xs"
+                                  [class]="
+                                    name === item.category
+                                      ? 'border-[var(--p-primary-color)] bg-[var(--p-primary-color)] text-[var(--p-primary-contrast-color)]'
+                                      : 'border-[var(--p-content-border-color)] text-[var(--p-text-muted-color)]'
+                                  "
+                                  (click)="setCategory(item, name)"
+                                >
+                                  {{ name }}
+                                </button>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </li>
+                }
+              </ul>
             }
-          </li>
+          </div>
         }
-      </ul>
+      </div>
 
       @if (done().length > 0) {
         <button
