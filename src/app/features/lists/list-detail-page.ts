@@ -60,6 +60,54 @@ export class ListDetailPage {
   protected readonly expandedItem = signal<string | null>(null);
   protected readonly doneOpen = signal(false);
   protected readonly templateDialogOpen = signal(false);
+  protected readonly collapsedCategories = signal<ReadonlySet<string>>(new Set());
+
+  protected readonly categoryGroups = computed(() => {
+    const map = new Map<string, ListItem[]>();
+    const order: string[] = [];
+
+    for (const item of this.pending()) {
+      const key = item.category ?? '';
+      const group = map.get(key);
+
+      if (group === undefined) {
+        map.set(key, [item]);
+        order.push(key);
+      } else {
+        group.push(item);
+      }
+    }
+
+    const uncategorizedIndex = order.indexOf('');
+
+    if (uncategorizedIndex > 0) {
+      order.splice(uncategorizedIndex, 1);
+      order.unshift('');
+    }
+
+    const collapsed = this.collapsedCategories();
+
+    return order.map((key) => ({
+      key,
+      name: key === '' ? null : key,
+      items: map.get(key) ?? [],
+      expanded: !collapsed.has(key),
+    }));
+  });
+
+  protected readonly categorySuggestions = computed(() => {
+    const seen = new Set<string>();
+    const suggestions: string[] = [];
+
+    for (const item of this.list()?.items ?? []) {
+      if (item.category !== null && !seen.has(item.category)) {
+        seen.add(item.category);
+        suggestions.push(item.category);
+      }
+    }
+
+    return suggestions;
+  });
 
   protected readonly menuItems = computed(() => {
     const list = this.list();
@@ -105,7 +153,32 @@ export class ListDetailPage {
     }
 
     this.quickAdd.set('');
-    this.service.addItem(this.id(), { text }).subscribe((list) => this.apply(list));
+
+    const previousIds = new Set((this.list()?.items ?? []).map((item) => item.id));
+
+    this.service.addItem(this.id(), { text }).subscribe((list) => {
+      this.apply(list);
+
+      const added = list.items.find((item) => !previousIds.has(item.id));
+
+      if (added === undefined) {
+        return;
+      }
+
+      this.expandedItem.set(added.id);
+      this.collapsedCategories.update((collapsed) => {
+        const key = added.category ?? '';
+
+        if (!collapsed.has(key)) {
+          return collapsed;
+        }
+
+        const next = new Set(collapsed);
+        next.delete(key);
+
+        return next;
+      });
+    });
   }
 
   protected toggle(item: ListItem): void {
@@ -126,6 +199,33 @@ export class ListDetailPage {
       .subscribe((list) => this.apply(list));
   }
 
+  protected setCategory(item: ListItem, value: string): void {
+    const trimmed = value.trim();
+    const category = trimmed === '' ? null : trimmed;
+
+    if (category === item.category) {
+      return;
+    }
+
+    this.service
+      .updateItem(this.id(), item.id, { category })
+      .subscribe((list) => this.apply(list));
+  }
+
+  protected toggleCategory(key: string): void {
+    this.collapsedCategories.update((collapsed) => {
+      const next = new Set(collapsed);
+
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+
+      return next;
+    });
+  }
+
   protected rename(item: ListItem, text: string): void {
     const trimmed = text.trim();
 
@@ -142,16 +242,19 @@ export class ListDetailPage {
     this.service.removeItem(this.id(), item.id).subscribe(() => this.resource.reload());
   }
 
-  protected drop(event: CdkDragDrop<readonly ListItem[]>): void {
+  protected drop(event: CdkDragDrop<readonly ListItem[]>, groupItems: readonly ListItem[]): void {
     const list = this.list();
 
     if (!list || event.previousIndex === event.currentIndex) {
       return;
     }
 
-    const pending = [...this.pending()];
-    moveItemInArray(pending, event.previousIndex, event.currentIndex);
+    const reorderedGroup = [...groupItems];
+    moveItemInArray(reorderedGroup, event.previousIndex, event.currentIndex);
 
+    const pending = this.categoryGroups().flatMap((group) =>
+      group.items === groupItems ? reorderedGroup : group.items,
+    );
     const order = [...pending, ...this.done()].map((item) => item.id);
 
     this.service.reorderItems(this.id(), order).subscribe((updated) => this.apply(updated));

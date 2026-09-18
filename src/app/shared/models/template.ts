@@ -3,6 +3,7 @@ import { IsoInstant, Uuid } from './common';
 export interface TemplateItem {
   readonly id: Uuid;
   readonly text: string;
+  readonly category: string | null;
   readonly defaultQuantity: string | null;
   readonly sortOrder: number;
 }
@@ -20,5 +21,9 @@ export interface TemplateDetail extends TemplateSummary {
 
 export interface UpsertTemplateRequest {
   readonly name: string;
-  readonly items: readonly { text: string; defaultQuantity?: string | null }[];
+  readonly items: readonly {
+    text: string;
+    category?: string | null;
+    defaultQuantity?: string | null;
+  }[];
 }
