@@ -64,7 +64,11 @@
     "createNewTemplate": "Criar um novo modelo",
     "templateSaved": "Modelo salvo",
     "deleteHeader": "Excluir esta lista?",
-    "deleteMessage": "A lista e seus itens serão removidos. Isso não pode ser desfeito."
+    "deleteMessage": "A lista e seus itens serão removidos. Isso não pode ser desfeito.",
+    "category": "Categoria",
+    "categoryPlaceholder": "Sem categoria",
+    "uncategorized": "Sem categoria",
+    "toggleCategory": "Categoria {{name}}"
   },
   "templates": {
     "title": "Modelos",
@@ -79,7 +83,8 @@
     "edit": "Editar {{name}}",
     "delete": "Excluir {{name}}",
     "deleteHeader": "Excluir este modelo?",
-    "deleteMessage": "{{name}} será removido. Listas já criadas a partir dele não são afetadas."
+    "deleteMessage": "{{name}} será removido. Listas já criadas a partir dele não são afetadas.",
+    "categoryPlaceholder": "Sem categoria"
   },
   "insights": {
     "title": "Tendências",

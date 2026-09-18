@@ -5,6 +5,7 @@ export type ListStatus = 'open' | 'closed';
 export interface ListItem {
   readonly id: Uuid;
   readonly text: string;
+  readonly category: string | null;
   readonly quantity: string | null;
   readonly unitPrice: string | null;
   readonly subtotal: string | null;
@@ -37,12 +38,14 @@ export interface CreateListRequest {
 
 export interface CreateItemRequest {
   readonly text: string;
+  readonly category?: string | null;
   readonly quantity?: string | null;
   readonly unitPrice?: string | null;
 }
 
 export interface UpdateItemRequest {
   readonly text?: string;
+  readonly category?: string | null;
   readonly quantity?: string | null;
   readonly unitPrice?: string | null;
   readonly checked?: boolean;
