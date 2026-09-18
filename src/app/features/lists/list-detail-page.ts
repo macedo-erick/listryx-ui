@@ -1,4 +1,10 @@
-import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,6 +21,7 @@ import { ListryxEmptyState } from '../../shared/ui/empty-state';
 import { formatMoney, formatQuantity, toDecimalString, toNumber } from '../../shared/util/money';
 import { currentCurrency } from '../../shared/util/currency';
 import { currentLocale } from '../../shared/util/locale';
+import { ListRenameDialog } from './list-rename-dialog';
 import { ListService } from './list.service';
 import { SaveAsTemplateDialog } from './save-as-template-dialog';
 
@@ -24,12 +31,14 @@ import { SaveAsTemplateDialog } from './save-as-template-dialog';
     FormsModule,
     CdkDropList,
     CdkDrag,
+    CdkDragHandle,
     Button,
     Checkbox,
     InputText,
     InputNumber,
     Menu,
     ListryxEmptyState,
+    ListRenameDialog,
     SaveAsTemplateDialog,
   ],
   templateUrl: './list-detail-page.html',
@@ -60,6 +69,7 @@ export class ListDetailPage {
   protected readonly expandedItem = signal<string | null>(null);
   protected readonly doneOpen = signal(false);
   protected readonly templateDialogOpen = signal(false);
+  protected readonly renameDialogOpen = signal(false);
   protected readonly collapsedCategories = signal<ReadonlySet<string>>(new Set());
 
   protected readonly categoryGroups = computed(() => {
@@ -113,6 +123,11 @@ export class ListDetailPage {
     const list = this.list();
 
     return [
+      {
+        label: this.t('lists.rename'),
+        icon: 'pi pi-pencil',
+        command: () => this.renameDialogOpen.set(true),
+      },
       {
         label: this.t('lists.saveAsTemplate'),
         icon: 'pi pi-clone',
@@ -255,9 +270,19 @@ export class ListDetailPage {
     const pending = this.categoryGroups().flatMap((group) =>
       group.items === groupItems ? reorderedGroup : group.items,
     );
-    const order = [...pending, ...this.done()].map((item) => item.id);
+    const items = [...pending, ...this.done()];
 
-    this.service.reorderItems(this.id(), order).subscribe((updated) => this.apply(updated));
+    this.apply({ ...list, items });
+
+    this.service
+      .reorderItems(
+        this.id(),
+        items.map((item) => item.id),
+      )
+      .subscribe({
+        next: (updated) => this.apply(updated),
+        error: () => this.apply(list),
+      });
   }
 
   protected back(): void {
@@ -266,6 +291,10 @@ export class ListDetailPage {
 
   protected expand(item: ListItem): void {
     this.expandedItem.update((current) => (current === item.id ? null : item.id));
+  }
+
+  protected onRenamed(list: ListDetail): void {
+    this.apply(list);
   }
 
   private close(): void {

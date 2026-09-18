@@ -76,7 +76,7 @@
                     cdkDrag
                     class="rounded-lg border border-[var(--p-content-border-color)] bg-[var(--p-content-background)]"
                   >
-                    <div class="flex items-center gap-3 p-3">
+                    <div class="flex select-none items-center gap-3 p-3">
                       <p-checkbox
                         [binary]="true"
                         [ngModel]="item.checked"
@@ -119,11 +119,12 @@
                         (onClick)="removeItem(item)"
                       />
 
-                      <i
+                      <button
+                type="button"
                         cdkDragHandle
-                        class="pi pi-bars cursor-grab text-[var(--p-text-muted-color)]"
+                        class="pi pi-bars cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
                         [attr.aria-label]="t('lists.reorder')"
-                      ></i>
+                      ></button>
                     </div>
 
                     @if (expandedItem() === item.id) {
@@ -316,6 +317,13 @@
       }
     </div>
   </div>
+
+  <listryx-list-rename-dialog
+    [(visible)]="renameDialogOpen"
+    [listId]="list.id"
+    [listName]="list.name"
+    (renamed)="onRenamed($event)"
+  />
 
   <listryx-save-as-template-dialog
     [(visible)]="templateDialogOpen"
