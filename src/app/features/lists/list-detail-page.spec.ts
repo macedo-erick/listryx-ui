@@ -16,6 +16,7 @@ function item(id: string, text: string, sortOrder: number): ListItem {
   return {
     id,
     text,
+    category: null,
     quantity: null,
     unitPrice: null,
     subtotal: null,
@@ -60,10 +61,12 @@ describe('ListDetailPage reordering', () => {
   }
 
   function reorder(): void {
-    (fixture.componentInstance as unknown as { drop(event: unknown): void }).drop({
-      previousIndex: 1,
-      currentIndex: 0,
-    });
+    const component = fixture.componentInstance as unknown as {
+      categoryGroups(): { items: readonly ListItem[] }[];
+      drop(event: unknown, groupItems: readonly ListItem[]): void;
+    };
+
+    component.drop({ previousIndex: 1, currentIndex: 0 }, component.categoryGroups()[0]!.items);
     fixture.detectChanges();
   }
 
