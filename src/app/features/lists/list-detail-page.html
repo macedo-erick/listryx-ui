@@ -47,7 +47,9 @@
               type="button"
               class="mb-1 flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-1 text-left"
               [attr.aria-expanded]="group.expanded"
-              [attr.aria-label]="t('lists.toggleCategory', { name: group.name ?? t('lists.uncategorized') })"
+              [attr.aria-label]="
+                t('lists.toggleCategory', { name: group.name ?? t('lists.uncategorized') })
+              "
               (click)="toggleCategory(group.key)"
             >
               <i
@@ -120,7 +122,7 @@
                       />
 
                       <button
-                type="button"
+                        type="button"
                         cdkDragHandle
                         class="pi pi-bars cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
                         [attr.aria-label]="t('lists.reorder')"
