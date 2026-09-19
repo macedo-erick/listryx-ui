@@ -16,6 +16,7 @@ function item(id: string, text: string, sortOrder: number): ListItem {
   return {
     id,
     text,
+    category: null,
     quantity: null,
     unitPrice: null,
     subtotal: null,

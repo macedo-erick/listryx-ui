@@ -31,10 +31,13 @@
         (cdkDropListDropped)="drop($event)"
       >
         @for (item of items(); track $index) {
-          <li cdkDrag class="flex flex-col gap-2 rounded-lg border border-[var(--p-content-border-color)] p-2">
+          <li
+            cdkDrag
+            class="flex flex-col gap-2 rounded-lg border border-[var(--p-content-border-color)] p-2"
+          >
             <div class="flex items-center gap-2">
               <button
-              type="button"
+                type="button"
                 cdkDragHandle
                 class="pi pi-bars shrink-0 cursor-grab border-0 bg-transparent p-2 text-[var(--p-text-muted-color)]"
                 [attr.aria-label]="t('lists.reorder')"

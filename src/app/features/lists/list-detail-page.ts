@@ -218,9 +218,7 @@ export class ListDetailPage {
       return;
     }
 
-    this.service
-      .updateItem(this.id(), item.id, { category })
-      .subscribe((list) => this.apply(list));
+    this.service.updateItem(this.id(), item.id, { category }).subscribe((list) => this.apply(list));
   }
 
   protected toggleCategory(key: string): void {
