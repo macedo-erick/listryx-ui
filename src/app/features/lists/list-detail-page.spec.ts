@@ -61,12 +61,14 @@ describe('ListDetailPage reordering', () => {
   }
 
   function reorder(): void {
-    const component = fixture.componentInstance as unknown as {
-      categoryGroups(): { items: readonly ListItem[] }[];
-      drop(event: unknown, groupItems: readonly ListItem[]): void;
-    };
+    const container = { data: { key: '', items: [MEIAS, TOUCAS] } };
 
-    component.drop({ previousIndex: 1, currentIndex: 0 }, component.categoryGroups()[0]!.items);
+    (fixture.componentInstance as unknown as { drop(event: unknown): void }).drop({
+      previousIndex: 1,
+      currentIndex: 0,
+      previousContainer: container,
+      container,
+    });
     fixture.detectChanges();
   }
 

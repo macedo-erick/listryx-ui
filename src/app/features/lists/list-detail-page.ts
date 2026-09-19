@@ -1,11 +1,13 @@
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import {
-  CdkDrag,
-  CdkDragDrop,
-  CdkDragHandle,
-  CdkDropList,
-  moveItemInArray,
-} from '@angular/cdk/drag-drop';
-import { Component, computed, inject, input, signal } from '@angular/core';
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
@@ -24,6 +26,14 @@ import { currentLocale } from '../../shared/util/locale';
 import { ListRenameDialog } from './list-rename-dialog';
 import { ListService } from './list.service';
 import { SaveAsTemplateDialog } from './save-as-template-dialog';
+
+interface CategoryGroup {
+  readonly key: string;
+  readonly name: string | null;
+  readonly items: readonly ListItem[];
+  readonly expanded: boolean;
+  readonly dropListId: string;
+}
 
 @Component({
   selector: 'listryx-list-detail-page',
@@ -72,7 +82,11 @@ export class ListDetailPage {
   protected readonly renameDialogOpen = signal(false);
   protected readonly collapsedCategories = signal<ReadonlySet<string>>(new Set());
 
-  protected readonly categoryGroups = computed(() => {
+  private readonly quickAddInput = viewChild.required<ElementRef<HTMLInputElement>>(
+    'quickAddInput',
+  );
+
+  protected readonly categoryGroups = computed<CategoryGroup[]>(() => {
     const map = new Map<string, ListItem[]>();
     const order: string[] = [];
 
@@ -102,8 +116,13 @@ export class ListDetailPage {
       name: key === '' ? null : key,
       items: map.get(key) ?? [],
       expanded: !collapsed.has(key),
+      dropListId: `group-${key}`,
     }));
   });
+
+  protected readonly groupDropListIds = computed(() =>
+    this.categoryGroups().map((group) => group.dropListId),
+  );
 
   protected readonly categorySuggestions = computed(() => {
     const seen = new Set<string>();
@@ -168,32 +187,9 @@ export class ListDetailPage {
     }
 
     this.quickAdd.set('');
+    this.quickAddInput().nativeElement.focus();
 
-    const previousIds = new Set((this.list()?.items ?? []).map((item) => item.id));
-
-    this.service.addItem(this.id(), { text }).subscribe((list) => {
-      this.apply(list);
-
-      const added = list.items.find((item) => !previousIds.has(item.id));
-
-      if (added === undefined) {
-        return;
-      }
-
-      this.expandedItem.set(added.id);
-      this.collapsedCategories.update((collapsed) => {
-        const key = added.category ?? '';
-
-        if (!collapsed.has(key)) {
-          return collapsed;
-        }
-
-        const next = new Set(collapsed);
-        next.delete(key);
-
-        return next;
-      });
-    });
+    this.service.addItem(this.id(), { text }).subscribe((list) => this.apply(list));
   }
 
   protected toggle(item: ListItem): void {
@@ -255,30 +251,61 @@ export class ListDetailPage {
     this.service.removeItem(this.id(), item.id).subscribe(() => this.resource.reload());
   }
 
-  protected drop(event: CdkDragDrop<readonly ListItem[]>, groupItems: readonly ListItem[]): void {
+  protected drop(event: CdkDragDrop<CategoryGroup>): void {
     const list = this.list();
 
-    if (!list || event.previousIndex === event.currentIndex) {
+    if (!list) {
       return;
     }
 
-    const reorderedGroup = [...groupItems];
-    moveItemInArray(reorderedGroup, event.previousIndex, event.currentIndex);
+    const sameGroup = event.previousContainer === event.container;
 
-    const pending = this.categoryGroups().flatMap((group) =>
-      group.items === groupItems ? reorderedGroup : group.items,
-    );
+    if (sameGroup && event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    const sourceKey = event.previousContainer.data.key;
+    const targetKey = event.container.data.key;
+
+    const sourceItems = [...event.previousContainer.data.items];
+    const [moved] = sourceItems.splice(event.previousIndex, 1);
+
+    const targetItems = sameGroup ? sourceItems : [...event.container.data.items];
+    targetItems.splice(event.currentIndex, 0, moved);
+
+    const pending = this.categoryGroups().flatMap((group) => {
+      if (group.key === targetKey) {
+        return targetItems;
+      }
+      if (group.key === sourceKey) {
+        return sourceItems;
+      }
+      return group.items;
+    });
     const items = [...pending, ...this.done()];
 
     this.apply({ ...list, items });
 
+    const persist = () =>
+      this.service
+        .reorderItems(
+          this.id(),
+          items.map((item) => item.id),
+        )
+        .subscribe({
+          next: (updated) => this.apply(updated),
+          error: () => this.apply(list),
+        });
+
+    if (sameGroup) {
+      persist();
+      return;
+    }
+
     this.service
-      .reorderItems(
-        this.id(),
-        items.map((item) => item.id),
-      )
+      .updateItem(this.id(), moved.id, { category: targetKey === '' ? null : targetKey })
       .subscribe({
-        next: (updated) => this.apply(updated),
+        next: persist,
         error: () => this.apply(list),
       });
   }
