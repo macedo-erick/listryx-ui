@@ -1,13 +1,5 @@
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
-import {
-  Component,
-  ElementRef,
-  computed,
-  inject,
-  input,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
@@ -82,9 +74,8 @@ export class ListDetailPage {
   protected readonly renameDialogOpen = signal(false);
   protected readonly collapsedCategories = signal<ReadonlySet<string>>(new Set());
 
-  private readonly quickAddInput = viewChild.required<ElementRef<HTMLInputElement>>(
-    'quickAddInput',
-  );
+  private readonly quickAddInput =
+    viewChild.required<ElementRef<HTMLInputElement>>('quickAddInput');
 
   protected readonly categoryGroups = computed<CategoryGroup[]>(() => {
     const map = new Map<string, ListItem[]>();
