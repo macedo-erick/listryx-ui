@@ -68,8 +68,11 @@
               <ul
                 class="m-0 flex list-none flex-col gap-1 p-0"
                 cdkDropList
+                [id]="group.dropListId"
+                [cdkDropListData]="group"
+                [cdkDropListConnectedTo]="groupDropListIds()"
                 cdkDropListLockAxis="y"
-                (cdkDropListDropped)="drop($event, group.items)"
+                (cdkDropListDropped)="drop($event)"
               >
                 @for (item of group.items; track item.id) {
                   <li
@@ -289,15 +292,17 @@
   <div
     class="fixed inset-x-0 bottom-0 border-t border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-3 lg:left-64"
   >
-    <div class="mx-auto flex max-w-2xl items-center gap-2">
+    <form class="mx-auto flex max-w-2xl items-center gap-2" (ngSubmit)="add()">
       <input
+        #quickAddInput
         pInputText
         class="w-full min-w-0 flex-1"
         autocomplete="off"
+        enterkeyhint="send"
+        name="quickAdd"
         [placeholder]="t('lists.quickAdd')"
         [ngModel]="quickAdd()"
         (ngModelChange)="quickAdd.set($event)"
-        (keyup.enter)="add()"
         [disabled]="list.status === 'closed'"
       />
       <p-button
@@ -315,7 +320,7 @@
           </span>
         </span>
       }
-    </div>
+    </form>
   </div>
 
   <listryx-list-rename-dialog
