@@ -60,9 +60,13 @@ describe('ListDetailPage reordering', () => {
   }
 
   function reorder(): void {
+    const container = { data: { key: '', items: [MEIAS, TOUCAS] } };
+
     (fixture.componentInstance as unknown as { drop(event: unknown): void }).drop({
       previousIndex: 1,
       currentIndex: 0,
+      previousContainer: container,
+      container,
     });
     fixture.detectChanges();
   }
